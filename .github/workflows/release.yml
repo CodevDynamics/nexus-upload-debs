@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 获取所有历史记录和标签
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -56,4 +58,13 @@ jobs:
           git config --local user.name "GitHub Action"
           git add -f dist
           git commit -m "Update dist files"
-          git push 
+          git push origin HEAD:main
+          # 从 GITHUB_REF 中提取标签名
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "Current tag: $TAG_NAME"
+          # 删除旧标签
+          git tag -d $TAG_NAME
+          # 创建新标签
+          git tag $TAG_NAME
+          # 推送标签到远程
+          git push origin $TAG_NAME 

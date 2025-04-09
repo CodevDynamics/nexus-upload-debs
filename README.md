@@ -77,6 +77,26 @@ jobs:
           nexus_password: ${{ secrets.NEXUS_PASSWORD }}
 ```
 
+## 发布说明
+
+要发布这个Action，请按照以下步骤操作：
+
+1. 克隆仓库到本地
+2. 安装依赖：
+   ```bash
+   npm install
+   ```
+3. 构建项目：
+   ```bash
+   npm run build
+   ```
+4. 提交所有更改，包括`dist`目录
+5. 创建并推送标签：
+   ```bash
+   git tag -a v1 -m "First release"
+   git push origin v1
+   ```
+
 ## 注意事项
 
 - 确保Nexus仓库已经创建并正确配置为apt类型
@@ -85,4 +105,5 @@ jobs:
 - 文件名应符合Debian包命名规范（通常为`packagename_version_arch.deb`）
 - 如果遇到软链接文件，Action会自动找到并上传实际文件
 - 如果运行环境中安装了dpkg工具，Action会优先使用dpkg解析deb文件的真实包信息
-- 如果没有安装dpkg，将回退到使用文件名解析方式 
+- 如果没有安装dpkg，将回退到使用文件名解析方式
+- 确保在发布Action之前已经运行了`npm run build`命令 

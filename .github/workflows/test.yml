@@ -32,11 +32,29 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Create test deb package
+        run: |
+          mkdir -p test-package/DEBIAN test-package/usr/bin
+          cat > test-package/DEBIAN/control << EOF
+          Package: test-package
+          Version: 1.0.0
+          Architecture: amd64
+          Maintainer: Test User <test@example.com>
+          Description: Test package for nexus-upload-debs action
+           This is a test package used for testing the nexus-upload-debs GitHub Action.
+          Section: test
+          Priority: optional
+          EOF
+          echo '#!/bin/bash' > test-package/usr/bin/test-script
+          echo 'echo "This is a test script from test-package"' >> test-package/usr/bin/test-script
+          chmod +x test-package/usr/bin/test-script
+          dpkg-deb --build test-package test/test-package_1.0.0_amd64.deb
+
       - name: Test Action
         uses: ./
         with:
           repository: test
           path: './test/test-package_1.0.0_amd64.deb'
-          nexus_url: http://${{ secrets.NEXUS_ENDPOINT }}
+          nexus_url: ${{ secrets.NEXUS_URL }}
           nexus_user: ${{ secrets.NEXUS_USER }}
           nexus_password: ${{ secrets.NEXUS_PASSWORD }} 

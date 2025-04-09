@@ -258,6 +258,7 @@ async function uploadComponent(config, repository, filePath) {
       return true;
     } else {
       console.error(`文件上传失败，状态码: ${response.status}`);
+      core.setFailed(`文件上传失败，状态码: ${response.status}`);
       return false;
     }
   } catch (error) {
@@ -265,6 +266,9 @@ async function uploadComponent(config, repository, filePath) {
     if (error.response) {
       console.error('响应状态:', error.response.status);
       console.error('响应数据:', error.response.data);
+      core.setFailed(`上传组件失败: ${error.message}\n响应状态: ${error.response.status}\n响应数据: ${JSON.stringify(error.response.data)}`);
+    } else {
+      core.setFailed(`上传组件失败: ${error.message}`);
     }
     return false;
   }
@@ -338,7 +342,7 @@ async function runRebuildAptMetadata(config) {
  * @param {string} repository 仓库名称
  * @param {string} filePath 文件路径
  * @param {Array} components 组件列表
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} 是否成功
  */
 async function processSingleFile(config, repository, filePath, components) {
   try {
@@ -386,9 +390,10 @@ async function processSingleFile(config, repository, filePath, components) {
     if (needUpload) {
       await uploadComponent(config, repository, actualFilePath);
     }
+    return true;
   } catch (error) {
     console.error(`处理文件 ${filePath} 失败:`, error.message);
-    throw error;
+    return false;
   }
 }
 
@@ -442,7 +447,11 @@ async function run() {
     if (stats.isFile()) {
       // 处理单个文件
       if (uploadPath.toLowerCase().endsWith('.deb')) {
-        await processSingleFile(config, repository, uploadPath, components);
+        const success = await processSingleFile(config, repository, uploadPath, components);
+        if (!success) {
+          core.setFailed('处理文件失败');
+          return;
+        }
       } else {
         console.error(`错误: 文件 '${uploadPath}' 不是deb文件`);
         core.setFailed(`文件 '${uploadPath}' 不是deb文件`);
@@ -461,7 +470,11 @@ async function run() {
       // 处理每个deb文件
       for (const file of debFiles) {
         const filePath = uploadPath === '.' ? file : path.join(uploadPath, file);
-        await processSingleFile(config, repository, filePath, components);
+        const success = await processSingleFile(config, repository, filePath, components);
+        if (!success) {
+          core.setFailed(`处理文件 ${filePath} 失败`);
+          return;
+        }
       }
     } else {
       console.error(`错误: 路径 '${uploadPath}' 既不是文件也不是目录`);
@@ -471,16 +484,15 @@ async function run() {
     
     console.log('上传处理完成');
     
-    // 在所有操作完成后，仅当执行过删除组件操作时才执行apt元数据重建任务
-    if (hasDeletedComponent) {
-      console.log('检测到有组件被删除，执行apt元数据重建任务...');
+    // 在所有操作完成后，如果repository为test或执行过删除组件操作，则执行apt元数据重建任务
+    if (repository === 'test' || hasDeletedComponent) {
       await runRebuildAptMetadata(config);
     }
     
     core.setOutput('result', '上传成功');
   } catch (error) {
     console.error('执行失败:', error.message);
-    core.setFailed(error.message);
+    core.setFailed(`执行失败: ${error.message}`);
   }
 }
 

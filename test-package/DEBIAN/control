@@ -1,8 +1,0 @@
-Package: test-package
-Version: 1.0.0
-Architecture: amd64
-Maintainer: Test User <test@example.com>
-Description: Test package for nexus-upload-debs action
- This is a test package used for testing the nexus-upload-debs GitHub Action.
-Section: test
-Priority: optional 

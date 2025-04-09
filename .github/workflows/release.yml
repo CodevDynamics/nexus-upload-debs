@@ -39,14 +39,14 @@ jobs:
           echo '#!/bin/bash' > test-package/usr/bin/test-script
           echo 'echo "This is a test script from test-package"' >> test-package/usr/bin/test-script
           chmod +x test-package/usr/bin/test-script
-          dpkg-deb --build test-package test/test-package_1.0.0_amd64.deb
+          dpkg-deb --build test-package test-package_1.0.0_amd64.deb
 
       - name: Test Action
         uses: ./
         with:
           repository: test
-          path: './test/test-package_1.0.0_amd64.deb'
-          nexus_url: ${{ secrets.NEXUS_URL }}
+          path: './test-package_1.0.0_amd64.deb'
+          nexus_url: http://${{ secrets.NEXUS_ENDPOINT }}
           nexus_user: ${{ secrets.NEXUS_USER }}
           nexus_password: ${{ secrets.NEXUS_PASSWORD }}
 

@@ -237,14 +237,10 @@ async function uploadComponent(config, repository, filePath) {
       contentType: 'application/x-deb'
     });
     
-    // 添加其他必要字段
-    formData.append('apt.asset.filename', path.basename(filePath));
-    
     const uploadConfig = { ...config };
     uploadConfig.headers = {
       ...uploadConfig.headers,
-      ...formData.getHeaders(),
-      'Content-Type': 'multipart/form-data'
+      ...formData.getHeaders()
     };
     
     const response = await axios.post(

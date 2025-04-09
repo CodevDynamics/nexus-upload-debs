@@ -1,12 +1,21 @@
-name: Release
+name: Test
 
 on:
   push:
-    tags:
-      - 'v*'
+    paths:
+      - 'test/**'
+      - 'src/**'
+      - 'action.yml'
+      - 'package.json'
+  pull_request:
+    paths:
+      - 'test/**'
+      - 'src/**'
+      - 'action.yml'
+      - 'package.json'
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -28,14 +37,6 @@ jobs:
         with:
           repository: test
           path: './test/test-package_1.0.0_amd64.deb'
-          nexus_url: ${{ secrets.NEXUS_URL }}
+          nexus_url: http://${{ secrets.NEXUS_ENDPOINT }}
           nexus_user: ${{ secrets.NEXUS_USER }}
-          nexus_password: ${{ secrets.NEXUS_PASSWORD }}
-
-      - name: Commit dist
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add -f dist
-          git commit -m "Update dist files"
-          git push 
+          nexus_password: ${{ secrets.NEXUS_PASSWORD }} 

@@ -231,15 +231,20 @@ async function uploadComponent(config, repository, filePath) {
     const formData = new FormData();
     const fileContent = await readFileAsync(filePath);
     
+    // 添加文件到formData
     formData.append('apt.asset', fileContent, {
       filename: path.basename(filePath),
       contentType: 'application/x-deb'
     });
     
+    // 添加其他必要字段
+    formData.append('apt.asset.filename', path.basename(filePath));
+    
     const uploadConfig = { ...config };
     uploadConfig.headers = {
       ...uploadConfig.headers,
-      ...formData.getHeaders()
+      ...formData.getHeaders(),
+      'Content-Type': 'multipart/form-data'
     };
     
     const response = await axios.post(
@@ -298,10 +303,16 @@ async function runRebuildAptMetadata(config) {
     console.log(`找到apt元数据重建任务ID: ${aptTask.id}`);
     
     // 执行任务
+    const runConfig = { ...config };
+    runConfig.headers = {
+      ...runConfig.headers,
+      'Content-Type': 'application/json'
+    };
+    
     const runResponse = await axios.post(
       `${config.baseURL}/service/rest/v1/tasks/${aptTask.id}/run`,
-      '',
-      config
+      {},
+      runConfig
     );
     
     if (runResponse.status === 204) {

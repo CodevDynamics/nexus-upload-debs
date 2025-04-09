@@ -1,0 +1,29 @@
+name: 'Nexus Upload Debs'
+description: '将deb文件上传到Nexus仓库'
+author: '贡献者'
+inputs:
+  repository:
+    description: 'Nexus仓库名称'
+    required: true
+  path:
+    description: '要上传的文件路径或目录（默认为当前目录）'
+    required: true
+    default: '.'
+  nexus_url:
+    description: 'Nexus服务器URL'
+    required: true
+    default: 'http://localhost:8081'
+  nexus_user:
+    description: 'Nexus用户名'
+    required: true
+    default: 'admin'
+  nexus_password:
+    description: 'Nexus密码'
+    required: true
+    default: 'admin123'
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
+branding:
+  icon: 'upload-cloud'
+  color: 'blue' 
